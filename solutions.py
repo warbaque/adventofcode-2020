@@ -30,6 +30,18 @@ def day2(input):
     print(count_part1)
     print(count_part2)
 
+
+def day3(input):
+    lines = input.split()
+    width = len(lines[0])
+
+    def count_trees(xstep, ystep):
+        return sum(1 for i, l in enumerate(lines[::ystep]) if (l[(xstep*i)%width] == '#'))
+
+    print(count_trees(3, 1))
+    print(numpy.prod([count_trees(x,y) for x,y in ((1,1), (3,1), (5,1), (7,1), (1,2))]))
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
