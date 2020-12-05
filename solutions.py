@@ -82,6 +82,18 @@ def day4(input):
     print(count_part2)
 
 
+def day5(input):
+    boarding_passes = input.split()
+
+    ids = {
+        int(re.sub(r'[BR]', '1', re.sub(r'[FL]', '0', boarding_pass)), 2)
+        for boarding_pass in boarding_passes
+    }
+
+    print(max(ids))
+    print(min(set(range(min(ids), max(ids))) - ids))
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
