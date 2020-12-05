@@ -42,6 +42,46 @@ def day3(input):
     print(numpy.prod([count_trees(x,y) for x,y in ((1,1), (3,1), (5,1), (7,1), (1,2))]))
 
 
+def day4(input):
+    passports = input.split('\n\n')
+
+    required_fields = {'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'}
+
+    def hgt(v):
+        r = re.compile(r'^(\d+)(in|cm)?$')
+        height, unit = r.match(v).groups()
+        return {
+            'cm': 150 <= int(height) <= 193,
+            'in':  59 <= int(height) <=  76,
+        }.get(unit, False)
+
+    validators = {
+        'byr': lambda v: 1920 <= int(v) <= 2002,
+        'iyr': lambda v: 2010 <= int(v) <= 2020,
+        'eyr': lambda v: 2020 <= int(v) <= 2030,
+        'hgt': hgt,
+        'hcl': lambda v: re.compile(r'^#[\da-z]{6}$').match(v) is not None,
+        'ecl': lambda v: v in {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'},
+        'pid': lambda v: re.compile(r'^\d{9}$').match(v) is not None,
+        'cid': lambda v: True,
+    }
+
+    count_part1 = 0
+    count_part2 = 0
+    for pp in passports:
+        passport_fields = dict(pair.split(':') for pair in pp.split())
+        missing_fields = required_fields - passport_fields.keys()
+        count_part1 += (not missing_fields)
+        count_part2 += (not missing_fields and all(validators[k](v) for k, v in passport_fields.items()))
+
+        for k, v in passport_fields.items():
+            print(f'{k}\t{validators[k](v)}\t{v}')
+        print()
+
+    print(count_part1)
+    print(count_part2)
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
