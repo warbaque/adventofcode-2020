@@ -4,6 +4,7 @@ import sys
 import re
 import itertools
 import numpy
+from functools import lru_cache
 
 inputs = dict((f"day{i+1}", f"inputs/{i+1}") for i in range(25))
 
@@ -103,6 +104,28 @@ def day6(input):
 
     print(sum(len(set(answers.replace('\n', ''))) for answers in answer_sets))
     print(sum(len(set.intersection(*[set(a) for a in answers.split()])) for answers in answer_sets))
+
+
+# https://adventofcode.com/2020/day/7
+def day7(input):
+    bag_regulations = input.strip().split('\n')
+
+    r = re.compile(r'(\d+) (.+?) bags?')
+    bags = {}
+    for regulation in bag_regulations:
+        parent, children = regulation.split(' bags contain ')
+        bags[parent] = {child: int(n) for n, child in r.findall(children)}
+
+    @lru_cache
+    def contains(parent, bag):
+        return bag in bags[parent] or any(contains(k, bag) for k in bags[parent])
+
+    @lru_cache
+    def count_children(bag):
+        return sum(v * (count_children(k) + 1) for k, v in bags[bag].items())
+
+    print(sum(contains(k, 'shiny gold') for k in bags))
+    print(count_children('shiny gold'))
 
 
 def solver(day):
