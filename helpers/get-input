@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+DAY="${1}"
+. "${BASH_SOURCE[0]%/*}/.env"
+
+curl -sL "https://adventofcode.com/2020/day/${DAY}/input" -b "session=${SESSION_TOKEN}" > "inputs/${DAY}" &&
+  cat "inputs/${DAY}" && echo "[Fetched $(wc -l < "inputs/${DAY}") lines]"
