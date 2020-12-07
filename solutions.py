@@ -97,6 +97,14 @@ def day5(input):
     print(min(set(range(min(ids), max(ids))) - ids))
 
 
+# https://adventofcode.com/2020/day/6
+def day6(input):
+    answer_sets = input.split('\n\n')
+
+    print(sum(len(set(answers.replace('\n', ''))) for answers in answer_sets))
+    print(sum(len(set.intersection(*[set(a) for a in answers.split()])) for answers in answer_sets))
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
