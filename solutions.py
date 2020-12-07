@@ -7,17 +7,17 @@ import numpy
 
 inputs = dict((f"day{i+1}", f"inputs/{i+1}") for i in range(25))
 
+
+# https://adventofcode.com/2020/day/1
 def day1(input):
     numbers = {int(i) for i in input.split()}
+    n = sorted(numbers)
 
-    print(numpy.prod(next(x for x in itertools.product(numbers, repeat=2) if sum(x) == 2020)))
-    print(numpy.prod(next(x for x in itertools.product(numbers, repeat=3) if sum(x) == 2020)))
-
-    # O(n) and O(n²) solutions
-    # print(next(x * (2020-x) for x in numbers if 2020-x in numbers))
-    # print(next(x * y * (2020-x-y) for x in numbers for y in numbers if 2020-x-y in numbers))
+    print(next(x * (2020-x) for x in numbers if 2020-x in numbers))
+    print(next(x * y * (2020-x-y) for x in n for y in n if 2020-x-y in numbers))
 
 
+# https://adventofcode.com/2020/day/2
 def day2(input):
     profiles = input.split('\n')
     r = re.compile(r'(\d+)-(\d+) (\S): (\S+)')
@@ -31,6 +31,7 @@ def day2(input):
     print(count_part2)
 
 
+# https://adventofcode.com/2020/day/3
 def day3(input):
     lines = input.split()
     width = len(lines[0])
@@ -42,6 +43,7 @@ def day3(input):
     print(numpy.prod([count_trees(x,y) for x,y in ((1,1), (3,1), (5,1), (7,1), (1,2))]))
 
 
+# https://adventofcode.com/2020/day/4
 def day4(input):
     passports = input.split('\n\n')
 
@@ -74,14 +76,15 @@ def day4(input):
         count_part1 += (not missing_fields)
         count_part2 += (not missing_fields and all(validators[k](v) for k, v in passport_fields.items()))
 
-        for k, v in passport_fields.items():
-            print(f'{k}\t{validators[k](v)}\t{v}')
-        print()
+        # for k, v in passport_fields.items():
+        #     print(f'{k}\t{validators[k](v)}\t{v}')
+        # print()
 
     print(count_part1)
     print(count_part2)
 
 
+# https://adventofcode.com/2020/day/5
 def day5(input):
     boarding_passes = input.split()
 
