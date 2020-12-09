@@ -5,6 +5,7 @@ import re
 import itertools
 import numpy
 from functools import lru_cache
+from collections import deque
 
 inputs = dict((f"day{i+1}", f"inputs/{i+1}") for i in range(25))
 
@@ -192,6 +193,31 @@ def day8(input):
                 run_until_loop(p) for p in alternate_programs(program)
             ) if program_state['done']
         ))
+
+
+# https://adventofcode.com/2020/day/9
+def day9(input):
+    data = [int(i) for i in input.split()]
+
+    def invalid_number():
+        xmas = deque(data[:25], maxlen=25)
+        for i in data[25:]:
+            sums = {sum(x) for x in itertools.product(xmas, repeat=2)}
+            if i not in sums:
+                return i
+            xmas.append(i)
+
+    def encryption_weakness(invalid_number):
+        xmas = deque()
+        for i in data:
+            xmas.append(i)
+            while sum(xmas) > invalid_number:
+                xmas.popleft()
+            if len(xmas) >= 2 and sum(xmas) == invalid_number:
+                return min(xmas) + max(xmas)
+
+    print(invalid_number())
+    print(encryption_weakness(invalid_number()))
 
 
 def solver(day):
