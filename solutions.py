@@ -220,6 +220,26 @@ def day9(input):
     print(encryption_weakness(invalid_number()))
 
 
+# https://adventofcode.com/2020/day/10
+def day10(input):
+    adapters = sorted([int(x) for x in input.split()])
+    joltages = adapters + [max(adapters) + 3]
+
+    def diffs():
+        d = [j1 - j0 for j0, j1 in zip([0] + joltages, joltages)]
+        return d.count(1) * d.count(3)
+
+    def possible_combinations():
+        dp = deque([(0, 1)], maxlen=3)
+        for joltage in joltages:
+            ways = sum(w for j, w in dp if (joltage - j <= 3))
+            dp.append((joltage, ways))
+        return dp[2][1]
+
+    print(diffs())
+    print(possible_combinations())
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
