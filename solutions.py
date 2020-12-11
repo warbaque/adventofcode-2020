@@ -4,6 +4,7 @@ import sys
 import re
 import itertools
 import numpy
+import time
 from functools import lru_cache
 from collections import deque
 
@@ -238,6 +239,66 @@ def day10(input):
 
     print(diffs())
     print(possible_combinations())
+
+
+# https://adventofcode.com/2020/day/11
+def day11(input):
+    seatmap = input.split()
+
+    height = len(seatmap)
+    width = len(seatmap[0])
+
+    def adjacent(seatmap, x, y, i, j):
+        if (0 <= x+i < width) and (0 <= y+j < height):
+            return seatmap[y+j][x+i] == '#'
+        return False
+
+    def visible(seatmap, x, y, i, j):
+        while True:
+            x += i
+            y += j
+            if not ((0 <= x < width) and (0 <= y < height)):
+                break
+            if seatmap[y][x] == '.':
+                continue
+            return seatmap[y][x] == '#'
+        return False
+
+    def new_state(seatmap, x, y, check, max_neighbours):
+        seat = seatmap[y][x]
+        neighbours = sum(
+            check(seatmap, x, y, i, j)
+            for i, j in itertools.product([-1, 0, 1], repeat=2)
+            if (i or j)
+        )
+        if seat == 'L' and neighbours == 0:
+            return '#'
+        if seat == '#' and neighbours >= max_neighbours:
+            return 'L'
+        return seat
+
+    def run(seatmap, check, max_neighbours):
+        seatmap = seatmap.copy()
+        while True:
+            for row in seatmap:
+                print(row, file=sys.stderr)
+            time.sleep(1/120)
+            new = [
+                ''.join(
+                    new_state(seatmap, x, y, check, max_neighbours)
+                    for x in range(width)
+                ) for y in range(height)
+            ]
+            if (seatmap == new):
+                break
+            seatmap = new
+
+        return sum(l.count('#') for l in seatmap)
+
+    part1 = run(seatmap, check=adjacent, max_neighbours=4)
+    part2 = run(seatmap, check=visible, max_neighbours=5)
+    print(part1)
+    print(part2)
 
 
 def solver(day):
