@@ -301,6 +301,79 @@ def day11(input):
     print(part2)
 
 
+# https://adventofcode.com/2020/day/12
+def day12(input):
+    instructions = input.strip().split('\n')
+
+    r = re.compile(r'(?P<action>[A-Z])(?P<value>\d+)')
+
+    def move(p, x, y):
+        p['position'][0] += x
+        p['position'][1] += y
+
+    def turn(ship, angle):
+        directions = 'NESW'
+        idx = directions.index(ship['direction']) + (angle % 360) // 90
+        ship['direction'] = directions[idx % 4]
+
+    def rotate(p, angle):
+        sin = int(numpy.sin(2 * numpy.pi * angle / 360))
+        cos = int(numpy.cos(2 * numpy.pi * angle / 360))
+        x = sin * p['position'][1] + cos * p['position'][0]
+        y = -sin * p['position'][0] + cos * p['position'][1]
+        p['position'] = [x, y]
+
+    def part1():
+        ship = {
+            'position': [0, 0],
+            'direction': 'E',
+        }
+
+        actions = {
+            'N': lambda y: move(ship, 0,  y),
+            'S': lambda y: move(ship, 0, -y),
+            'E': lambda x: move(ship,  x, 0),
+            'W': lambda x: move(ship, -x, 0),
+            'L': lambda v: turn(ship, -v),
+            'R': lambda v: turn(ship,  v),
+            'F': lambda v: actions[ship['direction']](v),
+        }
+
+        for instruction in instructions:
+            match = r.match(instruction)
+            actions[match['action']](int(match['value']))
+
+        return sum(abs(p) for p in ship['position'])
+
+    def part2():
+        ship = {
+            'position': [0, 0],
+        }
+
+        waypoint = {
+            'position': [10, 1],
+        }
+
+        part2_actions = {
+            'N': lambda y: move(waypoint, 0,  y),
+            'S': lambda y: move(waypoint, 0, -y),
+            'E': lambda x: move(waypoint,  x, 0),
+            'W': lambda x: move(waypoint, -x, 0),
+            'L': lambda v: rotate(waypoint, -v),
+            'R': lambda v: rotate(waypoint,  v),
+            'F': lambda v: move(ship, waypoint['position'][0] * v, waypoint['position'][1] * v)
+        }
+
+        for instruction in instructions:
+            match = r.match(instruction)
+            part2_actions[match['action']](int(match['value']))
+
+        return sum(abs(p) for p in ship['position'])
+
+    print(part1())
+    print(part2())
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
