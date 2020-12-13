@@ -307,68 +307,55 @@ def day12(input):
 
     r = re.compile(r'(?P<action>[A-Z])(?P<value>\d+)')
 
-    def move(p, x, y):
-        p['position'][0] += x
-        p['position'][1] += y
-
-    def turn(ship, angle):
-        directions = 'NESW'
-        idx = directions.index(ship['direction']) + (angle % 360) // 90
-        ship['direction'] = directions[idx % 4]
-
-    def rotate(p, angle):
-        sin = int(numpy.sin(2 * numpy.pi * angle / 360))
-        cos = int(numpy.cos(2 * numpy.pi * angle / 360))
-        x = sin * p['position'][1] + cos * p['position'][0]
-        y = -sin * p['position'][0] + cos * p['position'][1]
-        p['position'] = [x, y]
+    class Point:
+        def __init__(self, x, y):
+            self.p = complex(x, y)
+        def move(self, direction):
+            self.p += direction
+        def turn(self, rotation):
+            self.p *= rotation
+        def manhattan(self):
+            return int(abs(self.p.real) + abs(self.p.imag))
 
     def part1():
-        ship = {
-            'position': [0, 0],
-            'direction': 'E',
-        }
+        ship = Point(0, 0)
+        direction = Point(1, 0)
 
         actions = {
-            'N': lambda y: move(ship, 0,  y),
-            'S': lambda y: move(ship, 0, -y),
-            'E': lambda x: move(ship,  x, 0),
-            'W': lambda x: move(ship, -x, 0),
-            'L': lambda v: turn(ship, -v),
-            'R': lambda v: turn(ship,  v),
-            'F': lambda v: actions[ship['direction']](v),
+            'N': lambda y: ship.move(complex(0,  y)),
+            'S': lambda y: ship.move(complex(0, -y)),
+            'E': lambda x: ship.move(complex( x, 0)),
+            'W': lambda x: ship.move(complex(-x, 0)),
+            'L': lambda v: direction.turn(complex(0,  1) ** (v // 90)),
+            'R': lambda v: direction.turn(complex(0, -1) ** (v // 90)),
+            'F': lambda v: ship.move(v * direction.p),
         }
 
         for instruction in instructions:
             match = r.match(instruction)
             actions[match['action']](int(match['value']))
 
-        return sum(abs(p) for p in ship['position'])
+        return ship.manhattan()
 
     def part2():
-        ship = {
-            'position': [0, 0],
-        }
-
-        waypoint = {
-            'position': [10, 1],
-        }
+        ship = Point(0, 1)
+        waypoint = Point(10, 1)
 
         part2_actions = {
-            'N': lambda y: move(waypoint, 0,  y),
-            'S': lambda y: move(waypoint, 0, -y),
-            'E': lambda x: move(waypoint,  x, 0),
-            'W': lambda x: move(waypoint, -x, 0),
-            'L': lambda v: rotate(waypoint, -v),
-            'R': lambda v: rotate(waypoint,  v),
-            'F': lambda v: move(ship, waypoint['position'][0] * v, waypoint['position'][1] * v)
+            'N': lambda y: waypoint.move(complex(0,  y)),
+            'S': lambda y: waypoint.move(complex(0, -y)),
+            'E': lambda x: waypoint.move(complex( x, 0)),
+            'W': lambda x: waypoint.move(complex(-x, 0)),
+            'L': lambda v: waypoint.turn(complex(0,  1) ** (v // 90)),
+            'R': lambda v: waypoint.turn(complex(0, -1) ** (v // 90)),
+            'F': lambda v: ship.move(v * waypoint.p)
         }
 
         for instruction in instructions:
             match = r.match(instruction)
             part2_actions[match['action']](int(match['value']))
 
-        return sum(abs(p) for p in ship['position'])
+        return ship.manhattan()
 
     print(part1())
     print(part2())
