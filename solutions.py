@@ -361,6 +361,28 @@ def day12(input):
     print(part2())
 
 
+# https://adventofcode.com/2020/day/13
+def day13(input):
+    notes = input.split()
+    buses = [(i, int(bus)) for i, bus in enumerate(notes[1].split(',')) if bus != 'x']
+
+    def part1():
+        t0 = int(notes[0])
+        wait_times = [(bus, (bus - t0) % bus) for _, bus in buses]
+        return numpy.prod(min(wait_times, key=lambda x: x[1]))
+
+    def part2():
+        t0, step = 0, 1
+        for i, bus in buses:
+            while (t0 + i) % bus != 0:
+                t0 += step
+            step *= bus
+        return t0
+
+    print(part1())
+    print(part2())
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
