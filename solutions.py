@@ -383,6 +383,41 @@ def day13(input):
     print(part2())
 
 
+# https://adventofcode.com/2020/day/14
+def day14(input):
+    initialization = input.strip().split('\n')
+
+    r = re.compile(r'(?P<op>mask|mem)(?:\[(?P<address>\d+)\])? = (?P<value>\S+)')
+
+    part1_memory = {}
+    part2_memory = {}
+
+    for l in initialization:
+        op, address, value = r.match(l).groups()
+        if op == 'mask':
+            x0 = int(value.replace('X', '0'), 2)
+            x1 = int(value.replace('X', '1'), 2)
+
+            unset = ~(x0^x1)
+            bits = [1 << i for i, x in enumerate(reversed(value)) if x == "X"]
+            masks = [0]
+            for bit in bits:
+                masks += [(m | bit) for m in masks]
+
+        else:
+            address = int(address)
+            value = int(value)
+
+            part1_memory[address] = (value | x0) & x1
+
+            address = (address & unset) | x0
+            for m in masks:
+                part2_memory[address | m] = value
+
+    print(sum(part1_memory.values()))
+    print(sum(part2_memory.values()))
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
