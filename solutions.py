@@ -372,11 +372,11 @@ def day13(input):
         return numpy.prod(min(wait_times, key=lambda x: x[1]))
 
     def part2():
-        t0, step = 0, 1
+        t0, lcm = 0, 1
         for i, bus in buses:
-            while (t0 + i) % bus != 0:
-                t0 += step
-            step *= bus
+            k = (-(t0 + i) * pow(lcm, -1, bus)) % bus
+            t0 += k * lcm
+            lcm *= bus
         return t0
 
     print(part1())
