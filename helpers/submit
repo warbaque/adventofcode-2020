@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+root="${BASH_SOURCE[0]%/*}/.."
+
+DAY="${1}"
+PART="${2#part}"
+. "${root}"/helpers/.env
+
+part1() { "${root}"/solutions.py solver "day${DAY}" | head -1; }
+part2() { "${root}"/solutions.py solver "day${DAY}" | tail -1; }
+
+answer="$("part${PART}")"
+
+curl --data "level=${PART}&answer=${answer}" \
+  -sL "https://adventofcode.com/2020/day/${DAY}/answer" \
+  -b "session=${SESSION_TOKEN}" | w3m -dump -T text/html
