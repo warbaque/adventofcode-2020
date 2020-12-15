@@ -418,6 +418,25 @@ def day14(input):
     print(sum(part2_memory.values()))
 
 
+# https://adventofcode.com/2020/day/15
+def day15(input):
+    numbers = [int(i) for i in input.split(',')]
+
+    def nth_number(turns):
+        age = [-1] * turns
+        for t, n in enumerate(numbers):
+            age[n] = t
+
+        for t in range(len(numbers)-1, turns-1):
+            seen = (0 if age[n] < 0 else t - age[n])
+            age[n] = t
+            n = seen
+        return n
+
+    print(nth_number(2020))
+    print(nth_number(30000000))
+
+
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
