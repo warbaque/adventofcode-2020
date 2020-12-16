@@ -437,6 +437,57 @@ def day15(input):
     print(nth_number(30000000))
 
 
+# https://adventofcode.com/2020/day/16
+def day16(input):
+    ticket_data = input.strip().split('\n\n')
+
+    r = re.compile(r'(\d+)-(\d+)')
+    def parse_rule(rule):
+        field, ranges = rule.split(': ')
+        return field, [tuple(map(int, m)) for m in r.findall(ranges)]
+
+    rules = dict(parse_rule(rule) for rule in ticket_data[0].split('\n'))
+    our_ticket = list(map(int, ticket_data[1].split('your ticket:\n')[1].split(',')))
+    other_tickets = [list(map(int, t.split(','))) for t in ticket_data[2].split('nearby tickets:\n')[1].split()]
+
+    @lru_cache
+    def valid_fields(value):
+        return {
+            field for field, ranges in rules.items()
+            if any(mi <= value <= ma for mi, ma in ranges)
+        }
+
+    def part1():
+        return sum([v for values in other_tickets for v in values if not valid_fields(v)])
+
+    def part2():
+        options = [[valid_fields(v) for v in values] for values in other_tickets]
+
+        possible = {
+            i: set.intersection(*(fields[i] for fields in options if all(fields)))
+            for i in range(len(rules))
+        }
+
+        solved_fields = {}
+        for i in sorted(possible, key=lambda i: len(possible[i])):
+            solved_fields[i] = min(possible[i] - set(solved_fields.values()))
+
+        departure_values = [our_ticket[k] for k, v in solved_fields.items() if v.startswith('departure')]
+        return numpy.prod(departure_values)
+
+    print(part1())
+    print(part2())
+
+
+def profiler(method):
+    def wrapper(*arg, **kw):
+        t0 = time.time()
+        ret = method(*arg, **kw)
+        print(f'[{method.__name__}] {time.time()-t0:2.5f} sec', file=sys.stderr)
+        return ret
+    return wrapper
+
+@profiler
 def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
