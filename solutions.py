@@ -6,7 +6,7 @@ import itertools
 import numpy
 import time
 from functools import lru_cache
-from collections import deque
+from collections import deque, defaultdict, Counter
 
 inputs = dict((f"day{i+1}", f"inputs/{i+1}") for i in range(25))
 
@@ -477,6 +477,24 @@ def day16(input):
 
     print(part1())
     print(part2())
+
+
+# https://adventofcode.com/2020/day/17
+def day17(input):
+    initial_slice = input.split()
+
+    def neighbour_coordinates(p):
+        return [tuple(a+b for a, b in zip(p, t)) for t in itertools.product([-1, 0, 1], repeat=len(p)) if any(t)]
+
+    def simulate(dimensions):
+        active_coordinates = {(x,y)+(0,)*(dimensions-2) for y, l in enumerate(initial_slice) for x, c in enumerate(l) if c == '#'}
+        for _ in range(6):
+            total_neighbours = Counter(p for coordinate in active_coordinates for p in neighbour_coordinates(coordinate))
+            active_coordinates = {p for p, n in total_neighbours.items() if (p in active_coordinates and n == 2) or n == 3}
+        return len(active_coordinates)
+
+    print(simulate(3))
+    print(simulate(4))
 
 
 def profiler(method):
