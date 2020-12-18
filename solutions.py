@@ -497,6 +497,36 @@ def day17(input):
     print(simulate(4))
 
 
+# https://adventofcode.com/2020/day/18
+def day18(input):
+    equations = input.strip().split('\n')
+
+    def calc(*args):
+        a, op, b = args
+        return str(int(a) + int(b) if op == '+' else int(a) * int(b))
+
+    def regex_replace(pattern, fn, s):
+        r = re.compile(pattern)
+        while m := r.search(s):
+            b, e = m.span()
+            s = s[:b] + fn(*m.groups()) + s[e:]
+        return s
+
+    def part1(eq):
+        return regex_replace(r'(\d+) ([*+]) (\d+)', calc, eq)
+
+    def part2(eq):
+        eq = regex_replace(r'(\d+) ([+]) (\d+)', calc, eq)
+        eq = regex_replace(r'(\d+) ([*]) (\d+)', calc, eq)
+        return eq
+
+    def solve(eq, fn):
+        return int(fn(regex_replace(r'\(([^()]*)\)', fn, eq)))
+
+    print(sum(solve(equation, part1) for equation in equations))
+    print(sum(solve(equation, part2) for equation in equations))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
