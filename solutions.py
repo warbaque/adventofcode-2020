@@ -527,6 +527,30 @@ def day18(input):
     print(sum(solve(equation, part2) for equation in equations))
 
 
+# https://adventofcode.com/2020/day/19
+def day19(input):
+    raw_rules, messages = input.strip().split('\n\n')
+
+    rules = dict(tuple(r.split(': ')) for r in raw_rules.split('\n'))
+    part1_rules = rules.copy()
+    part2_rules = rules.copy()
+    part2_rules.update({'8': '42 | 42 8', '11': '42 31 | 42 11 31'})
+
+    def count_matches(rules, messages):
+        def recursive_regex(rule, d=0):
+            if d > 20:
+                return ""
+            if rule.startswith('"'):
+                return rule.strip('"')
+            return f"(?:{'|'.join(''.join(recursive_regex(rules[k], d+1) for k in r.split()) for r in rule.split('|'))})"
+
+        r = re.compile(f"^{recursive_regex(rules['0'])}$")
+        return sum(1 for message in messages.split('\n') if r.match(message))
+
+    print(count_matches(part1_rules, messages))
+    print(count_matches(part2_rules, messages))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
