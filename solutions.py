@@ -553,7 +553,7 @@ def day19(input):
 
 # https://adventofcode.com/2020/day/20
 def day20(input):
-    raw_image_data = input.strip().split('\n\n')
+    raw_tile_data = input.strip().split('\n\n')
 
     class Tile:
         def parser(raw):
@@ -567,7 +567,7 @@ def day20(input):
             self.right = ''.join(row[-1] for row in data)
             self.left = ''.join(row[0] for row in data)
             self.edges = (self.top, self.bottom, self.right, self.left)
-            self.image = [row[1:-1] for row in data[1:-1]]
+            self.center = [row[1:-1] for row in data[1:-1]]
         def edge_variations(self):
             return [edge for e in self.edges for edge in (e, e[::-1])]
         def __str__(self):
@@ -582,25 +582,27 @@ def day20(input):
                 yield tile
                 yield tile.flipped()
                 tile = tile.rotated()
+        def __hash__(self):
+            return hash(self.id)
+        def __eq__(self, other):
+            return self.id == other.id
 
-    tiles = [Tile.parser(raw.split('\n')) for raw in raw_image_data]
-    tile_ids = {tile.id: tile for tile in tiles}
+    tiles = [Tile.parser(raw.split('\n')) for raw in raw_tile_data]
 
     def corner_tiles():
         edge_counts = Counter(edge for tile in tiles for edge in tile.edge_variations())
-        return [tile.id for tile in tiles if sum(edge_counts[edge] for edge in tile.edges) == 6]
+        return [tile for tile in tiles if sum(edge_counts[edge] for edge in tile.edges) == 6]
 
-    edge_tiles = {}
-    for edge, tileid in [(edge, tile.id) for tile in tiles for edge in tile.edge_variations()]:
-        edge_tiles.setdefault(edge, set()).add(tileid)
+    tiles_with_edge = {}
+    for tile in tiles:
+        for edge in tile.edge_variations():
+            tiles_with_edge.setdefault(edge, set()).add(tile)
 
     def get_neighbour(tile, direction):
         adjacent= {'left': 'right', 'right': 'left', 'top': 'bottom', 'bottom': 'top'}
         edge = getattr(tile, direction)
-        neighbour = edge_tiles[edge] - {tile.id}
-        if not neighbour:
-            return None
-        return min([other for other in tile_ids[min(neighbour)].all_variations() if edge == getattr(other, adjacent[direction])])
+        if neighbour := tiles_with_edge[edge] - {tile}:
+            return next(other for other in next(iter(neighbour)).all_variations() if edge == getattr(other, adjacent[direction]))
 
     def dfs(tile, p, visited={}):
         if (p in visited):
@@ -612,14 +614,14 @@ def day20(input):
                 dfs(neighbour, p+offset, visited)
         return visited
 
-    corner = next(tile for tile in tile_ids[corner_tiles()[0]].all_variations() if not ((edge_tiles[tile.top] | edge_tiles[tile.left]) - {tile.id}))
+    corner = next(tile for tile in corner_tiles()[0].all_variations() if not ((tiles_with_edge[tile.top] | tiles_with_edge[tile.left]) - {tile}))
     visited = dfs(corner, 0)
-    width = int(max(visited.keys(), key=lambda x: x.real).real) + 1
-    height = int(max(visited.keys(), key=lambda x: x.imag).imag) + 1
+    x_max = max(int(v.real) for v in visited.keys())
+    y_max = max(int(v.imag) for v in visited.keys())
 
     world = []
-    for y in range(height):
-        for x in zip(*[visited[x + y*1j].image for x in range(width)]):
+    for y in range(y_max+1):
+        for x in zip(*[visited[x + y*1j].center for x in range(x_max+1)]):
             print(x, file=sys.stderr)
             world.append(''.join(x))
         print(file=sys.stderr)
@@ -654,7 +656,7 @@ def day20(input):
     for y in world:
         print(y, file=sys.stderr)
 
-    print(numpy.prod(corner_tiles()))
+    print(numpy.prod([tile.id for tile in corner_tiles()]))
     print(sum(y.count('#') for y in world))
 
 
