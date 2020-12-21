@@ -658,6 +658,38 @@ def day20(input):
     print(sum(y.count('#') for y in world))
 
 
+# https://adventofcode.com/2020/day/21
+def day21(input):
+    ingredients_list = input.strip().split('\n')
+
+    r = re.compile(r'(?P<ingredients>.*) \(contains (?P<allergens>.*)\)')
+
+    ingredient_counts = Counter()
+    possible = {}
+    for l in ingredients_list:
+        m = r.match(l)
+        ingredients = set(m['ingredients'].split())
+        ingredient_counts.update(ingredients)
+        for allergen in m['allergens'].split(', '):
+            if allergen in possible:
+                possible[allergen] &= ingredients
+            else:
+                possible[allergen] = ingredients.copy()
+
+    def part1():
+        non_allergenic = ingredient_counts.keys() - set.union(*possible.values())
+        return sum(ingredient_counts[ingredient] for ingredient in non_allergenic)
+
+    def part2():
+        solved = {}
+        for k in sorted(possible, key=lambda k: len(possible[k])):
+            solved[min(possible[k] - set(solved.keys()))] = k
+        return ','.join(k for k in sorted(solved, key=solved.get))
+
+    print(part1())
+    print(part2())
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
