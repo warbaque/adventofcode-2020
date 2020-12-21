@@ -551,6 +551,113 @@ def day19(input):
     print(count_matches(part2_rules, messages))
 
 
+# https://adventofcode.com/2020/day/20
+def day20(input):
+    raw_image_data = input.strip().split('\n\n')
+
+    class Tile:
+        def parser(raw):
+            r = re.compile(r'Tile (?P<id>\d+):')
+            return Tile(int(r.match(raw[0])['id']), raw[1:])
+        def __init__(self, tileid, data):
+            self.id = tileid
+            self.data = data
+            self.top = data[0]
+            self.bottom = data[-1]
+            self.right = ''.join(row[-1] for row in data)
+            self.left = ''.join(row[0] for row in data)
+            self.edges = (self.top, self.bottom, self.right, self.left)
+            self.image = [row[1:-1] for row in data[1:-1]]
+        def edge_variations(self):
+            return [edge for e in self.edges for edge in (e, e[::-1])]
+        def __str__(self):
+            return '\n'.join(' '.join(row) for row in self.data)
+        def rotated(self):
+            return Tile(self.id, [''.join(row) for row in zip(*reversed(self.data))])
+        def flipped(self):
+            return Tile(self.id, [row[::-1] for row in self.data])
+        def all_variations(self):
+            tile = self
+            for i in range(4):
+                yield tile
+                yield tile.flipped()
+                tile = tile.rotated()
+
+    tiles = [Tile.parser(raw.split('\n')) for raw in raw_image_data]
+    tile_ids = {tile.id: tile for tile in tiles}
+
+    def corner_tiles():
+        edge_counts = Counter(edge for tile in tiles for edge in tile.edge_variations())
+        return [tile.id for tile in tiles if sum(edge_counts[edge] for edge in tile.edges) == 6]
+
+    edge_tiles = {}
+    for edge, tileid in [(edge, tile.id) for tile in tiles for edge in tile.edge_variations()]:
+        edge_tiles.setdefault(edge, set()).add(tileid)
+
+    def get_neighbour(tile, direction):
+        adjacent= {'left': 'right', 'right': 'left', 'top': 'bottom', 'bottom': 'top'}
+        edge = getattr(tile, direction)
+        neighbour = edge_tiles[edge] - {tile.id}
+        if not neighbour:
+            return None
+        return min([other for other in tile_ids[min(neighbour)].all_variations() if edge == getattr(other, adjacent[direction])])
+
+    def dfs(tile, p, visited={}):
+        if (p in visited):
+            return visited
+        visited[p] = tile
+        neigbours = [(offset, get_neighbour(tile, direction)) for offset, direction in ((-1j, 'top'), (1, 'right'), (1j, 'bottom'), (-1, 'left'))]
+        for offset, neighbour in neigbours:
+            if neighbour:
+                dfs(neighbour, p+offset, visited)
+        return visited
+
+    corner = next(tile for tile in tile_ids[corner_tiles()[0]].all_variations() if not ((edge_tiles[tile.top] | edge_tiles[tile.left]) - {tile.id}))
+    visited = dfs(corner, 0)
+    width = int(max(visited.keys(), key=lambda x: x.real).real) + 1
+    height = int(max(visited.keys(), key=lambda x: x.imag).imag) + 1
+
+    world = []
+    for y in range(height):
+        for x in zip(*[visited[x + y*1j].image for x in range(width)]):
+            print(x, file=sys.stderr)
+            world.append(''.join(x))
+        print(file=sys.stderr)
+
+    def monster_at(world, x, y, sea_monster):
+        coordinates = set()
+        if (len(sea_monster) + y > len(world)) or (len(sea_monster[0]) + x > len(world[0])):
+            return set()
+        for j, row in enumerate(sea_monster):
+            for i, c in enumerate(row):
+                if c == '#':
+                    coordinates.add((x+i, y+j))
+                if not (c == ' ' or world[y+j][x+i] == '#'):
+                    return set()
+        return coordinates
+
+    sea_monsters = [monster.data for monster in Tile('sea monster', [
+            '                  # ',
+            '#    ##    ##    ###',
+            ' #  #  #  #  #  #   ',
+        ]).all_variations()]
+
+    monster_coordinates = set.union(*[
+        monster_at(world, x, y, sea_monster)
+        for sea_monster in sea_monsters
+        for y in range(len(world))
+        for x in range(len(world[0]))])
+
+    for x, y in monster_coordinates:
+        world[y] = world[y][:x] + 'O' + world[y][x+1:]
+
+    for y in world:
+        print(y, file=sys.stderr)
+
+    print(numpy.prod(corner_tiles()))
+    print(sum(y.count('#') for y in world))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
