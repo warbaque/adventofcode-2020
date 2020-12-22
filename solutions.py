@@ -692,6 +692,57 @@ def day21(input):
     print(part2())
 
 
+# https://adventofcode.com/2020/day/22
+def day22(input):
+    decks = input.strip().split('\n\n')
+    deck1 = [int(x) for x in decks[0].split('\n')[1:]]
+    deck2 = [int(x) for x in decks[1].split('\n')[1:]]
+
+    def score(deck):
+        return sum((i+1) * x for i, x in enumerate(reversed(deck)))
+
+    def part1(deck1, deck2):
+        while deck1 and deck2:
+            x1 = deck1.pop(0)
+            x2 = deck2.pop(0)
+            if x1 > x2:
+                deck1 += (x1, x2)
+            else:
+                deck2 += (x2, x1)
+        return max(score(deck1), score(deck2))
+
+    def recursive_combat(deck1, deck2):
+        cache = set()
+        while deck1 and deck2:
+            state = (tuple(deck1), tuple(deck2))
+            if state in cache:
+                break
+            cache.add(state)
+
+            x1 = deck1.pop(0)
+            x2 = deck2.pop(0)
+
+            if x1 > len(deck1) or x2 > len(deck2):
+                winner = 1 if x1 > x2 else 2
+            else:
+                s1, _ = recursive_combat(deck1[:x1], deck2[:x2])
+                winner = 1 if s1 else 2
+
+            if winner == 1:
+                deck1 += (x1, x2)
+            else:
+                deck2 += (x2, x1)
+
+        return deck1, deck2
+
+    def part2(deck1, deck2):
+        deck1, deck2 = recursive_combat(deck1, deck2)
+        return max(score(deck1), score(deck2))
+
+    print(part1(deck1.copy(), deck2.copy()))
+    print(part2(deck1.copy(), deck2.copy()))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
