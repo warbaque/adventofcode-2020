@@ -743,6 +743,49 @@ def day22(input):
     print(part2(deck1.copy(), deck2.copy()))
 
 
+# https://adventofcode.com/2020/day/23
+def day23(input):
+    initial_cups = [int(x) for x in input.strip()]
+
+    def cupgame(cups, moves):
+        last = max(cups)
+        prev = lambda cup: cup - 1 if cup > 1 else last
+
+        nex = [i+1 for i in range(len(cups) + 1)]
+        cup = cups[0]
+        for label in reversed(cups):
+            nex[label] = cup
+            cup = label
+
+        for _ in range(moves):
+            three = nex[cup], nex[nex[cup]], nex[nex[nex[cup]]]
+            nex[cup] = nex[three[-1]]
+
+            dst = prev(cup)
+            while dst in three:
+                dst = prev(dst)
+
+            nex[dst], nex[three[-1]] = three[0], nex[dst]
+            cup = nex[cup]
+
+        cup = nex[1]
+        while cup != 1:
+            yield cup
+            cup = nex[cup]
+
+    def part1():
+        cup_iter = cupgame(initial_cups, 100)
+        return ''.join(str(x) for x in cup_iter)
+
+    def part2():
+        initial_cups.extend(range(max(initial_cups) + 1, 1_000_000 + 1))
+        cup_iter = cupgame(initial_cups, 10_000_000)
+        return next(cup_iter) * next(cup_iter)
+
+    print(part1())
+    print(part2())
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
