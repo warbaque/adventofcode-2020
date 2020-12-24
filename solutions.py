@@ -786,6 +786,35 @@ def day23(input):
     print(part2())
 
 
+# https://adventofcode.com/2020/day/24
+def day24(input):
+    tiles = input.strip().split()
+
+    direction = {
+        'e':   1+0j,
+        'ne':  0+1j,
+        'nw': -1+1j,
+        'w':  -1+0j,
+        'sw':  0-1j,
+        'se':  1-1j,
+    }
+    r = re.compile(r'([ns]?[ew])')
+    flips = Counter(sum(direction[d] for d in r.findall(tile)) for tile in tiles)
+    blacks = {k for k, v in flips.items() if v % 2}
+
+    def neighbour_coordinates(p):
+        return [p + t for t in direction.values()]
+
+    def simulate(blacks, days):
+        for _ in range(days):
+            total_neighbours = Counter(p for coordinate in blacks for p in neighbour_coordinates(coordinate))
+            blacks = {p for p, n in total_neighbours.items() if (p in blacks and n == 1) or n == 2}
+        return blacks
+
+    print(len(blacks))
+    print(len(simulate(blacks, 100)))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
