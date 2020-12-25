@@ -815,6 +815,29 @@ def day24(input):
     print(len(simulate(blacks, 100)))
 
 
+# https://adventofcode.com/2020/day/25
+def day25(input):
+    public_keys = input.strip().split()
+    card_pub_key, door_pub_key = map(int, public_keys)
+
+    Y = 20201227
+
+    def loop_size(h):
+        N = int(Y**0.5 + 1)
+        table = {pow(7, e, Y): e for e in range(N)}
+        factor = pow(7, N * (Y - 2), Y)
+
+        e = h
+        for j in range(N):
+            if e in table:
+                return j * N + table[e]
+            e = (e * factor) % Y
+
+
+    print(pow(door_pub_key, loop_size(card_pub_key), Y))
+    print(pow(card_pub_key, loop_size(door_pub_key), Y))
+
+
 def profiler(method):
     def wrapper(*arg, **kw):
         t0 = time.time()
