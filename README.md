@@ -12,6 +12,11 @@
 ❯ ./solutions.py solver day3
 ```
 
+*solve all*
+```sh
+❯ ./solutions.py all_days
+```
+
 *submit solution to aoc*
 ```sh
 ❯ helpers/submit 11 part2

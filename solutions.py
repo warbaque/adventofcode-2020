@@ -851,4 +851,11 @@ def solver(day):
     with open(inputs[day], "r") as f:
         globals()[day](f.read())
 
+@profiler
+def all_days(*args, **kwargs):
+    for i in range(25):
+        print(f"===== DAY {i+1:2d} =====")
+        solver(f"day{i+1}")
+        print()
+
 globals()[sys.argv[1]](*sys.argv[2:])
